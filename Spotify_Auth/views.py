@@ -7,7 +7,7 @@ import requests
 
 
 def home(request):
-    return HttpResponse('Home')
+    return HttpResponse('Homeee')
 
 
 def authURL(request):
