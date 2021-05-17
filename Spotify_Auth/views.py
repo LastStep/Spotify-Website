@@ -1,13 +1,29 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from rest_framework.views import APIView
 
-from .credentials import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPE
 import requests
+from .credentials import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPE
+
+from .forms import LoginForm
+from DataBase.firebase import DB_firebase as db
+from .util import get_token
 
 
-def home(request):
-    return HttpResponse('Homeee')
+DB = db()
+
+
+
+def welcome(request):
+    token = get_token(request.session.get('username'))
+    data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers={
+        'Authorization': f'Bearer {token}'
+    }).json()
+    context = {
+        'username': request.session.get('username'),
+        'token': token,
+        'data': data
+    }
+    return render(request, 'welcome.html', context=context)
 
 
 def authURL(request):
@@ -32,9 +48,23 @@ def callback(request):
         'client_secret': CLIENT_SECRET
     }).json()
 
-    print(response)
-    return redirect('/login/home')
+    DB.set_user_data(request.session.get('username'), response)
+    return redirect('/welcome')
 
 
 
+def login_form(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            request.session['username'] = form.cleaned_data['username']
+            # request.session['db'] = db
 
+            # if DB.if_doc_exists(form.cleaned_data['username']):
+            #     return HttpResponseRedirect('/welcome')
+            return HttpResponseRedirect('/login')
+    else:
+        form = LoginForm()
+
+    return render(request, 'login.html', {'form': form})

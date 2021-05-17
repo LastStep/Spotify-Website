@@ -3,7 +3,9 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.authURL),
-    path('home', views.home),
-    path('redirect', views.callback),
+    path('', views.login_form),
+    path('login', views.authURL),
+    path('login/redirect', views.callback),
+
+    path('welcome', views.welcome)
 ]
