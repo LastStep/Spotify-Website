@@ -28,9 +28,7 @@ class DB_firebase:
 
 
     def update_user_data_field(self, user, field, value):
-        self.db.collection(self.collection).document(user).update({
-            field : value
-        })    
+        self.db.collection(self.collection).document(user).update({field : value})    
 
 
     def delete_collection_data(self, collection, item):
@@ -41,7 +39,7 @@ class DB_firebase:
         self.db.collection(self.collection).document(user).delete()
 
     
-    def get_all_data(self, collection = None):
+    def __get_all_data(self, collection = None):
         docs = self.db.collection(collection or self.collection).stream()
         for doc in docs:
             print(f'{doc.id} => {doc.to_dict()}')
@@ -52,7 +50,11 @@ class DB_firebase:
         if doc.exists:
             return doc.to_dict()
         else:
-            print(u'No such document!')
+            return False
+
+    def get_user_data_field(self, user, field):
+        doc = self.db.collection(self.collection).document(user).get()
+        return doc.to_dict()[field]
     
     def if_doc_exists(self, user):
         return self.db.collection(self.collection).document(user).get().exists

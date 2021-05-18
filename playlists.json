@@ -1,0 +1,102 @@
+{
+  "href": "https://api.spotify.com/v1/users/grannyfarts9000/playlists?offset=0&limit=2",
+  "items": [
+    {
+      "collaborative": false,
+      "description": "for a dreamy state",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/7cj3dKYiSWF7ADT6wuY9Dh"
+      },
+      "href": "https://api.spotify.com/v1/playlists/7cj3dKYiSWF7ADT6wuY9Dh",
+      "id": "7cj3dKYiSWF7ADT6wuY9Dh",
+      "images": [
+        {
+          "height": 640,
+          "url": "https://mosaic.scdn.co/640/ab67616d0000b2731721039eb3dfadd939938d70ab67616d0000b2738bdedcb3d7502a89e9783d85ab67616d0000b273b2bccd4f0dafab84faf216e7ab67616d0000b273e0008d241f55aefb0788eadf",
+          "width": 640
+        },
+        {
+          "height": 300,
+          "url": "https://mosaic.scdn.co/300/ab67616d0000b2731721039eb3dfadd939938d70ab67616d0000b2738bdedcb3d7502a89e9783d85ab67616d0000b273b2bccd4f0dafab84faf216e7ab67616d0000b273e0008d241f55aefb0788eadf",
+          "width": 300
+        },
+        {
+          "height": 60,
+          "url": "https://mosaic.scdn.co/60/ab67616d0000b2731721039eb3dfadd939938d70ab67616d0000b2738bdedcb3d7502a89e9783d85ab67616d0000b273b2bccd4f0dafab84faf216e7ab67616d0000b273e0008d241f55aefb0788eadf",
+          "width": 60
+        }
+      ],
+      "name": "all my dreams are of you",
+      "owner": {
+        "display_name": "Rohan Yadav",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/grannyfarts9000"
+        },
+        "href": "https://api.spotify.com/v1/users/grannyfarts9000",
+        "id": "grannyfarts9000",
+        "type": "user",
+        "uri": "spotify:user:grannyfarts9000"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "NDEsNzUzZWY4NTRhY2NlMjI5Mzg2ZmM0YTM0NTQ4OTE1MzY1ZjAzYzc2Zg==",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/7cj3dKYiSWF7ADT6wuY9Dh/tracks",
+        "total": 29
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:7cj3dKYiSWF7ADT6wuY9Dh"
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/2ipHaqS8bouVOjapm3sNHU"
+      },
+      "href": "https://api.spotify.com/v1/playlists/2ipHaqS8bouVOjapm3sNHU",
+      "id": "2ipHaqS8bouVOjapm3sNHU",
+      "images": [
+        {
+          "height": 640,
+          "url": "https://mosaic.scdn.co/640/ab67616d0000b273065237cd0f13831472a0a531ab67616d0000b2730edf799019737736bb78a6f4ab67616d0000b273726d534ee21640d3f00e8daaab67616d0000b273daef82cc1fbaf489c0109704",
+          "width": 640
+        },
+        {
+          "height": 300,
+          "url": "https://mosaic.scdn.co/300/ab67616d0000b273065237cd0f13831472a0a531ab67616d0000b2730edf799019737736bb78a6f4ab67616d0000b273726d534ee21640d3f00e8daaab67616d0000b273daef82cc1fbaf489c0109704",
+          "width": 300
+        },
+        {
+          "height": 60,
+          "url": "https://mosaic.scdn.co/60/ab67616d0000b273065237cd0f13831472a0a531ab67616d0000b2730edf799019737736bb78a6f4ab67616d0000b273726d534ee21640d3f00e8daaab67616d0000b273daef82cc1fbaf489c0109704",
+          "width": 60
+        }
+      ],
+      "name": "Chill vibes asian songs",
+      "owner": {
+        "display_name": "Rohan Yadav",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/grannyfarts9000"
+        },
+        "href": "https://api.spotify.com/v1/users/grannyfarts9000",
+        "id": "grannyfarts9000",
+        "type": "user",
+        "uri": "spotify:user:grannyfarts9000"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "MjgsY2E2YjY3MjYxOWZiYzc3NDg2NWEwYmRkYjA0NzE1OWJmZWNhYzY0MA==",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/2ipHaqS8bouVOjapm3sNHU/tracks",
+        "total": 20
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:2ipHaqS8bouVOjapm3sNHU"
+    }
+  ],
+  "limit": 2,
+  "next": "https://api.spotify.com/v1/users/grannyfarts9000/playlists?offset=2&limit=2",
+  "offset": 0,
+  "previous": null,
+  "total": 48
+}
