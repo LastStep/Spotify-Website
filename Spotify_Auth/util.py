@@ -26,7 +26,6 @@ def refresh_roken(user):
         auth=(CLIENT_ID, CLIENT_SECRET)).json()
 
     response['expires_in'] = timezone.now() + timedelta(minutes=5, seconds=response['expires_in'])
-    print('refresh')
     DB.update_user_data(user, response)
 
 

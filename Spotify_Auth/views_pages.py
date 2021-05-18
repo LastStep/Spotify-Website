@@ -12,17 +12,15 @@ def welcome(request):
     response = api_request(request, url)
     
     status, error = error_handling(response.status_code)
-    if status:
-        data = response.json()
-    else:
-        messages.info(request, error)
-        welcome(request)
-
     context = {
         'username': request.session.get('username'),
-        'data': data,
         'title': 'Welcome'
     }
+
+    if status:
+        context['data'] = response.json()
+    else:
+        context['error'] = error
     return render(request, 'welcome.html', context=context)
 
 

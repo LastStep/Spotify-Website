@@ -5,10 +5,9 @@
 	<!-- Required meta tags -->
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-	<link rel="icon" href="/static/images/favicon.png" sizes="32x32" type="image/png">
-
-	<link rel="stylesheet" type="text/css" href={{"staticfiles/style_main.css"}}>
+	{% load static %}
+	<link rel="icon" href="static/images/favicon.png" sizes="32x32" type="image/png">
+	<link rel="stylesheet" type="text/css" href="{% static 'style_main.css' %}">
 
 	{% if title %}
 	<title>Spotify - {{ title }}</title>

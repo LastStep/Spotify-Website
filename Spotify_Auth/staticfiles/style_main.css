@@ -8,7 +8,7 @@ html {
 	font-family: sans-serif;
 	background: #eee;
 	padding: 1rem;
-	background-image: url('/static/images/bg1.jpg');
+	background-image: url('images/bg1.jpg');
 	background-repeat: no-repeat;
 	background-attachment: fixed;
 	background-size: cover;
