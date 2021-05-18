@@ -128,20 +128,17 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-STATIC_ROOT = os.path.join(SETTINGS_PATH, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
-    os.path.join(SETTINGS_PATH, 'static'),
-    os.path.join(SETTINGS_PATH, 'DataBase'),
-    os.path.join(SETTINGS_PATH, 'Spotify_Auth\static')
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'DataBase\staticfiles'),
+    os.path.join(BASE_DIR, 'Spotify_Auth\static')
 )
-
-print(STATICFILES_DIRS)
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
