@@ -6,7 +6,7 @@ from firebase_admin import firestore
 class DB_firebase:
 
     def __init__(self,
-                creds_path = r'C:\Users\Gray\Random\Spotify_Website\DataBase\firebase_creds.json',
+                creds_path = r'Database\firebase_creds.json',
                 collection = 'users'):
 
         cred = credentials.Certificate(creds_path)
