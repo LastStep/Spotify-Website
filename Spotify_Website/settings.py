@@ -138,8 +138,10 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(SETTINGS_PATH, 'static'),
     os.path.join(SETTINGS_PATH, 'DataBase'),
-    os.path.join(SETTINGS_PATH, 'Spotify_Auth/static')
+    os.path.join(SETTINGS_PATH, 'Spotify_Auth\static')
 )
+
+print(STATICFILES_DIRS)
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
