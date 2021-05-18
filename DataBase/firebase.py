@@ -1,15 +1,11 @@
-import sys
-sys.path.append("..")
-
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-from ..Spotify_Website.settings import BASE_DIR
 
 class DB_firebase:
 
     def __init__(self,
-                creds_path = BASE_DIR + 'firebase_creds.json',
+                creds_path = r'staticfiles\firebase_creds.json',
                 collection = 'users'):
 
         cred = credentials.Certificate(creds_path)
