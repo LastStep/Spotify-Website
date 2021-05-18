@@ -6,7 +6,7 @@ from firebase_admin import firestore
 class DB_firebase:
 
     def __init__(self,
-                creds_path = r'Database\staticfiles\firebase_creds.json',
+                creds_path = r'DataBase\staticfiles\firebase_creds.json',
                 collection = 'users'):
 
         cred = credentials.Certificate(creds_path)
