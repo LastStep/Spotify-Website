@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 import requests
-from .DataBase.firebase import DB_firebase as db
 from django.utils import timezone
 
 from .credentials import CLIENT_ID, CLIENT_SECRET
+from .firebase import DB_firebase as db
 
 DB = db()
 

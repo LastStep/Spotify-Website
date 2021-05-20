@@ -1,12 +1,12 @@
 from datetime import timedelta
 
 import requests
-from .DataBase.firebase import DB_firebase as db
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .credentials import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPE
+from .firebase import DB_firebase as db
 from .forms import LoginForm
 
 DB = db()

@@ -1,11 +1,13 @@
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from django.contrib.staticfiles import finders
+
 
 class DB_firebase:
 
     def __init__(self,
-                creds_path = r'Spotify_Auth\static\firebase_creds.json',
+                creds_path = finders.find('firebase_creds.json'),
                 collection = 'users'):
 
         cred = credentials.Certificate(creds_path)
