@@ -19,6 +19,8 @@ def welcome(request):
 
     if status:
         context['data'] = response.json()
+        context['title'] = response.json()['item']['name']
+        # context['favicon_url'] = response.json()['item']['album']['images'][1]['url']
     else:
         context['error'] = error
     return render(request, 'welcome.html', context=context)
