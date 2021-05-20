@@ -129,8 +129,7 @@ STATIC_URL = '/static/'
 
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'DataBase/static'),
-    os.path.join(BASE_DIR, 'Spotify_Auth/static')
+    os.path.join(BASE_DIR, 'Spotify_Auth/static'),
 )
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'

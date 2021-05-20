@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import requests
-from DataBase.firebase import DB_firebase as db
+from .DataBase.firebase import DB_firebase as db
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.utils import timezone
