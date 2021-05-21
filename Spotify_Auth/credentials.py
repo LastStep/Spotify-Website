@@ -6,4 +6,4 @@ SCOPE = """
         playlist-read-private playlist-read-collaborative
         """
         
-REDIRECT_URI = 'http://localhost:8000/login/redirect'
+REDIRECT_URI = 'https://spotifyprojectidk.herokuapp.com/login/redirect'
