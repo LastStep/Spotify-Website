@@ -7,3 +7,4 @@ SCOPE = """
         """
         
 REDIRECT_URI = 'https://spotifyprojectidk.herokuapp.com/login/redirect'
+# REDIRECT_URI = 'http://localhost:8000/login/redirect'

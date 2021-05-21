@@ -41,8 +41,9 @@ def callback(request):
 
 
 def login_form(request):
-    if request.session.get('username'):
+    if request.session.get('username') and DB.if_doc_exists(request.session.get('username')):
         return HttpResponseRedirect('/welcome')
+
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
