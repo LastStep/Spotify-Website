@@ -1,17 +1,16 @@
-import requests, json
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
-from .util import api_request, error_handling, update_playlist_api_urls
-from .forms import SearchBox
+from . import util
+from .forms import SearchBox, ScanPlaylists
 
 
 def welcome(request):
     url = 'https://api.spotify.com/v1/me/player/currently-playing'
-    response = api_request(request, url)
+    response = util.api_request(request, url)
     
-    status, error = error_handling(response.status_code)
+    status, error = util.error_info(response.status_code)
     context = {
         'username': request.session.get('username'),
         'title': 'Welcome'
@@ -26,26 +25,39 @@ def welcome(request):
     return render(request, 'welcome.html', context=context)
 
 
+
 def search_playlist(request):
-    update_playlist_api_urls(request, request.session.get('username'))
-
-    if request.method == 'POST':
-        form = SearchBox(request.POST)
-        if form.is_valid():
-            request.session['search'] = form.cleaned_data['search']
-            context = {
-                'title': 'Search Playlist',
-                'search': request.session.get('search'),
-                'form': form
-            }
-            return render(request, 'search_playlist.html', context=context)
-
-    else:
-        form = SearchBox()
-
+    searchForm, scanForm = SearchBox(request.POST or None), ScanPlaylists(request.POST or None)
     context = {
         'title': 'Search Playlist',
-        'form': form
+        'searchForm': searchForm,
+        'scanForm': scanForm,
     }
 
+    if request.method == 'POST':
+        if scanForm.is_valid():
+            util.update_playlist_id(request)
+            util.store_playlists_data(request)
+            context['scanBtnClass'] = 'btn btn-success'
+            # return render(request, 'search_playlist.html', context=context)
+
+        # if searchForm.is_valid():
+        #     request.session['search'] = searchForm.cleaned_data['search']
+        #     context = {
+        #         'title': 'Search Playlist',
+        #         'search': request.session.get('search'),
+        #         'form': searchForm
+        #     }
+        #     return render(request, 'search_playlist.html', context=context)
+
+    pl_data = util.get_playlists_data(request)
+    if pl_data:
+        context['playlist_data'] = pl_data
+        # context['playlist_data'] = sorted(zip(
+        #     pl_data['playlist_names'],
+        #     pl_data['playlist_urls'],
+        #     pl_data['playlist_imgs'],
+        # ))
+
     return render(request, 'search_playlist.html', context=context)
+

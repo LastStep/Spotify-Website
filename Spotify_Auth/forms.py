@@ -6,5 +6,8 @@ class LoginForm(forms.Form):
 
 
 class SearchBox(forms.Form):
-    search = forms.CharField(label=False, max_length=100,
-                             widget=forms.TextInput(attrs={'placeholder': 'Song Name...'}))
+    pass
+
+
+class ScanPlaylists(forms.Form):
+    pass

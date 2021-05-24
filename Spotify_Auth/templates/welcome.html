@@ -4,7 +4,7 @@
     <p style="text-align:center;">Welcome Lord <b style="color:darkgreen;">{{ username }}</b></p>
     {% if data %}
     <div class="flex-container" id="player">
-        <a name="album_img"><img src={{data.item.album.images.1.url}} width="300" height="295"></a>
+        <a name="album_img"><img src={{data.item.album.images.1.url}} width="300" height="300"></a>
         <a name="song" href={{data.item.external_urls.spotify}}>{{data.item.name}}</a>
         {% for artists in data.item.artists %}
         <a name="artist" href={{artists.external_urls.spotify}}>{{artists.name}}</a>

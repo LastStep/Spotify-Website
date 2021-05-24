@@ -8,6 +8,7 @@ from django.utils import timezone
 from .credentials import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPE
 from .firebase import DB_firebase as db
 from .forms import LoginForm
+from .util import authenticate, is_authenticated
 
 DB = db()
 
@@ -22,7 +23,6 @@ def login(request):
     return HttpResponseRedirect(url)
 
 
-
 def callback(request):
     code = request.GET.get('code')
     
@@ -33,27 +33,37 @@ def callback(request):
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET
     }).json()
-    response['expires_in'] = timezone.now() + timedelta(minutes=5, seconds=response['expires_in'])
+    response['expires_in'] = timezone.now() + timedelta(seconds=response['expires_in'])
 
-    DB.set_user_data(request.session.get('username'), response)
+    DB.update_user_data(request.session.get('username'), dict_data={'exists':True})
+    DB.update_user_data(
+        request.session.get('username'),
+        collection='credentials',
+        doc='creds',
+        dict_data=response)
     return redirect('/welcome')
 
 
 
 def login_form(request):
-    if request.session.get('username') and DB.if_doc_exists(request.session.get('username')):
+    user = request.session.get('username')
+    if user and DB.if_doc_exists(user) and is_authenticated(user):
         return HttpResponseRedirect('/welcome')
 
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            request.session['username'] = form.cleaned_data['username']
+            user = form.cleaned_data['username']
+            request.session['username'] = user
             if not form.cleaned_data['remember_me']:
                 request.session.set_expiry(0)
 
-            if DB.if_doc_exists(form.cleaned_data['username']):
-                return HttpResponseRedirect('/welcome')
+            if DB.if_doc_exists(user):
+                if is_authenticated(user):
+                    return HttpResponseRedirect('/welcome')
+                authenticate(user)
+                
             return HttpResponseRedirect('/login')
     else:
         form = LoginForm()

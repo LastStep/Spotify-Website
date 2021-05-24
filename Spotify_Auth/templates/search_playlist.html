@@ -1,21 +1,35 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<form method="post" style="margin: 0">
+{% if scanForm %}
+<form method="post">
     {% csrf_token %}
-    <!-- {{ form }}
-    <button id="search_submit" type="submit" >
-        <img src="static/images/search_icon.png" width="20" height="20">
-    </button> -->
-    <button id="scan_playlists" type="submit" >
-        <!-- <img src="static/images/search_icon.png" width="20" height="20"> -->
-    </button>
+    <div style="text-align: center;">
+    <button id="scan_playlists" type="submit" class=
+    "{% if scanBtnClass %} {{ scanBtnClass }} {% else %} btn btn-secondary {% endif %}">
+    Scan Playlists</button>
+    </div>
 </form>
+<br></br>
+{% endif %}
 
-<button id="scan_playlists" type="submit">Scan Playlists</button>
 
 {% if search %}
 <h1>{{search}}</h1>
+{% endif %}
+
+{% if playlist_data %}
+<div class="card-columns">
+    {% for key,pl_info in playlist_data.items %}
+        <div class="card text-white bg-dark mb-3 text-right" style="max-width: 18rem;">
+            <img src="{{ pl_info.playlist_image }}" class="card-img-top" width="300" height="300">
+            <div class="card-body">
+            <h6 class="card-title text-center">{{ pl_info.playlist_name }}</h6>
+            <a href="{{ pl_info.playlist_url }}" class="btn btn-primary" target="_blank">Open PLaylist</a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 {% endif %}
 
 {% endblock content %}
