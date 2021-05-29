@@ -1,4 +1,4 @@
-from firebase_admin import initialize_app, credentials, firestore, db
+from firebase_admin import initialize_app, credentials, firestore
 from django.contrib.staticfiles import finders
 
 
@@ -34,7 +34,11 @@ class DB_firebase:
         if dict_data:
             ref.set(dict_data , merge=True)
         elif field and value:
-            ref.update({field : value})
+            try:
+                ref.update({field: value})
+            except Exception as e:
+                print(e)
+                ref.set({field: value}, merge=True)
         else:
             assert 'No dict_data or field value provided'
 

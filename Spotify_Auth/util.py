@@ -124,7 +124,7 @@ def get_playlists(request):
 def store_playlists_data(request):
     pl_ids = get_playlists(request)
     pl_info = {}
-    for pl_num, pl_id in pl_ids.items():
+    for _, (pl_num, pl_id) in zip(range(3000), pl_ids.items()):
         url = f'https://api.spotify.com/v1/playlists/{pl_id}'
         response = api_request(request, url)
         status, error = error_info(response.status_code)
@@ -136,8 +136,13 @@ def store_playlists_data(request):
             info['playlist_url'] = response['external_urls']['spotify']
             info['playlist_image'] = response['images'][0]['url']
         
-        # pl_tracks = store_playlists_tracks(request, url, response['name'])
-        # DB.update_user_collection_field(get_user(request), 'playlist_data', 'tracks', f'playlist_tracks.{str(pl_num)}', pl_tracks)
+        pl_tracks = store_playlists_tracks(request, url, response['name'])
+        DB.update_user_data(
+            get_user(request),
+            collection='playlist_data',
+            doc='tracks',
+            field=str(pl_num),
+            value=pl_tracks)
 
         pl_info[str(pl_num)] = info
 
@@ -146,22 +151,10 @@ def store_playlists_data(request):
         collection='playlist_data',
         doc='playlist_info',
         dict_data=pl_info)
-    
 
 
-def get_playlists_data(request):
-    try:
-        return DB.get_user_data(
-            get_user(request),
-            collection='playlist_data',
-            doc='playlist_info')
-    except Exception as e:
-        print(f'Error in Getting Playlist Data from DB : {e}')
-        return False
-
-
-def store_playlists_tracks(request, playlist_api_url, playlist_name, offset=0):
-    url = f'{playlist_api_url}/tracks'
+def store_playlists_tracks(request, playlist_url, playlist_name, offset=0):
+    url = f'{playlist_url}/tracks'
     response = api_request(request, url, params={
         'fields': 'items(track(name,external_urls,album(name,images,external_urls),artists(name,external_urls)))',
         'limit': 100,
@@ -196,3 +189,22 @@ def store_playlists_tracks(request, playlist_api_url, playlist_name, offset=0):
                 pass
 
     return tracks_data
+
+
+def get_playlists_data(request):
+    try:
+        return DB.get_user_data(
+            get_user(request),
+            collection='playlist_data',
+            doc='playlist_info')
+    except Exception as e:
+        print(f'Error in Getting Playlist Data from DB : {e}')
+        return False
+
+
+def get_tracks(request):
+    tracks_dict = DB.get_user_data(
+        get_user(request),
+        collection='playlist_data',
+        doc='tracks')  
+    return tracks_dict

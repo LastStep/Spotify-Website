@@ -1,9 +1,10 @@
-from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect
+from collections import defaultdict
 from django.shortcuts import redirect, render
 
 from . import util
-from .forms import SearchBox, ScanPlaylists
+from .forms import ScanPlaylists
+
+import json
 
 
 def welcome(request):
@@ -25,12 +26,10 @@ def welcome(request):
     return render(request, 'welcome.html', context=context)
 
 
-
 def search_playlist(request):
-    searchForm, scanForm = SearchBox(request.POST or None), ScanPlaylists(request.POST or None)
+    scanForm = ScanPlaylists(request.POST or None)
     context = {
         'title': 'Search Playlist',
-        'searchForm': searchForm,
         'scanForm': scanForm,
     }
 
@@ -39,25 +38,33 @@ def search_playlist(request):
             util.update_playlist_id(request)
             util.store_playlists_data(request)
             context['scanBtnClass'] = 'btn btn-success'
-            # return render(request, 'search_playlist.html', context=context)
 
-        # if searchForm.is_valid():
-        #     request.session['search'] = searchForm.cleaned_data['search']
-        #     context = {
-        #         'title': 'Search Playlist',
-        #         'search': request.session.get('search'),
-        #         'form': searchForm
-        #     }
-        #     return render(request, 'search_playlist.html', context=context)
+        if request.POST.get('searchForm'):
+            search = context['search'] = request.session['search'] = request.POST.get('searchForm')
+            search_result = defaultdict(list)
+            for playlist_id, tracks in request.session['songs_data'].items():
+                for track in tracks:
+                    if search == track['track_name']:
+                        search_result[playlist_id].append(track)
+            context['search_result'] = dict(search_result)
 
-    pl_data = util.get_playlists_data(request)
-    if pl_data:
-        context['playlist_data'] = pl_data
-        # context['playlist_data'] = sorted(zip(
-        #     pl_data['playlist_names'],
-        #     pl_data['playlist_urls'],
-        #     pl_data['playlist_imgs'],
-        # ))
+    try:
+        context['playlist_data'] = dict(request.session['playlist_data'])
+    except KeyError:
+        context['playlist_data'] = request.session['playlist_data'] = dict(util.get_playlists_data(request))
 
+    try:
+        context['songs_data'] = request.session['songs_data']
+        context['songs_list'] = request.session['songs_list']
+    except KeyError:
+        tracks_dict = util.get_tracks(request)
+        context['songs_data'] = request.session['songs_data'] = tracks_dict
+
+        songs_list = defaultdict(bool)
+        for playlist_id, tracks in tracks_dict.items():
+            for track in tracks:
+                songs_list[track['track_name']] = True
+        context['songs_list'] = request.session['songs_list'] = json.dumps(songs_list)
+    
     return render(request, 'search_playlist.html', context=context)
 

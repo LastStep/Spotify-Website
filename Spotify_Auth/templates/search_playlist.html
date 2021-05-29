@@ -2,23 +2,50 @@
 {% block content %}
 
 {% if scanForm %}
-<form method="post">
+<form method="post" class="scan_form">
     {% csrf_token %}
-    <div style="text-align: center;">
-    <button id="scan_playlists" type="submit" class=
-    "{% if scanBtnClass %} {{ scanBtnClass }} {% else %} btn btn-secondary {% endif %}">
-    Scan Playlists</button>
+    <div>
+        <button id="scan_playlists" type="submit" class=
+            "{% if scanBtnClass %} {{ scanBtnClass }} {% else %} btn btn-secondary {% endif %}">
+            Scan Playlists
+        </button>
     </div>
 </form>
-<br></br>
 {% endif %}
 
+<form method="post" class="search_form">
+    {% csrf_token %}
+    <div>
+        <input type="text" id="tags" name="searchForm">
+        <!-- {{ searchForm }} -->
+        <button id="search_playlists" type="submit">Search</button>
+    </div>
+</form>
 
 {% if search %}
-<h1>{{search}}</h1>
+<h4 class="font-weight-bold text-center">{{ search }}</h4>
 {% endif %}
 
-{% if playlist_data %}
+{% if search_result and playlist_data %}
+<div class="card-columns">
+    {% for pl_id,tracks_info in search_result.items %}
+        {% for track_info in tracks_info %}
+            {% with playlist_data|get_item:pl_id as pl_data %}</p>
+            <div class="card text-white bg-dark mb-3 text-right" style="max-width: 18rem;">
+                <img src="{{ pl_data.playlist_image }}" class="card-img-top" width="300" height="300">
+                <div class="card-body">
+                    <h6 class="card-title text-center">{{ pl_data.playlist_name }}</h6>
+                    <div>
+                        <img src="{{ track_info.album_image }}" width="50" height="50">
+                        <a href="{{ track_info.album_link }}" target="_blank">{{ track_info.track_name }}</a>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+        {% endfor %}
+    {% endfor %}
+</div>
+{% elif playlist_data %}
 <div class="card-columns">
     {% for key,pl_info in playlist_data.items %}
         <div class="card text-white bg-dark mb-3 text-right" style="max-width: 18rem;">
@@ -31,5 +58,28 @@
     {% endfor %}
 </div>
 {% endif %}
+
+<!-- <script>
+    $(function(){
+        $('form.scan_form').on('submit', function(e){
+            $('form.scan_form').append('<a class="font-weight-light" id="loading">Scanning Playlists...</a>')
+        });
+    })
+</script> -->
+
+<script>
+    $( function() {
+        var songs_list = JSON.parse("{{ songs_list|escapejs }}");
+        var availableTags = [];
+        for (var song in songs_list) {
+            availableTags.push(song);
+        }
+
+      $( "#tags" ).autocomplete({
+        source: availableTags,
+        minLength: 2,
+      });
+    } );
+</script>
 
 {% endblock content %}
