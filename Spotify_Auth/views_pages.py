@@ -5,6 +5,7 @@ from . import util
 from .forms import ScanPlaylists
 from .models import PlaylistData
 from .database import DataBase
+import time
 
 PLAYLIST_DATA = DataBase(PlaylistData)
 
@@ -35,7 +36,9 @@ def search_playlist(request):
     if request.POST:
         if scanForm.is_valid():
             util.update_playlist_id(request)
-            # util.store_playlists_data(request)
+            start = time.time()
+            util.store_playlists_data(request)
+            print(f'Time Elapsed : {time.time() - start}')
             scanBtnClass = 'btn btn-success'
 
         if request.POST.get('searchForm'):

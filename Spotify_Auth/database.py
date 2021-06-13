@@ -1,3 +1,4 @@
+from typing import Union
 from django.db import models, IntegrityError
 from django.db.models.query import QuerySet
 
@@ -17,8 +18,19 @@ class DataBase(models.Model):
         self.model_instance.save()
 
 
-    def get_data(self, filters: dict, fields: tuple[str] = (), order: tuple[str] = ()) -> QuerySet:
-        return self.model.objects.filter(**filters).order_by(*order).values(*fields)
+    def get_data(
+        self, 
+        filters: dict, 
+        fields: tuple[str] = (), 
+        order: tuple[str] = (), 
+        as_list: bool = False,
+        flat: bool = False
+    ) -> Union[QuerySet[dict], QuerySet[tuple], QuerySet[list]]:
+
+        query_set = self.model.objects.filter(**filters).order_by(*order)
+        if as_list:
+            return query_set.values_list(*fields, flat=flat)
+        return query_set.values(*fields)
 
     
     # Adds Data in the instance
