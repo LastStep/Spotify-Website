@@ -1,67 +1,67 @@
 from collections import defaultdict
 from datetime import timedelta
+from django.core.exceptions import ObjectDoesNotExist
 
 import requests
 from django.utils import timezone
 
 from .credentials import CLIENT_ID, CLIENT_SECRET
-from .firebase import DB_firebase as db
+from .models import Credentials, PlaylistData
+from .database import DataBase
 
-DB = db()
-
-
-def api_request(request, url, data={}, params={}):
-    token = get_token(request.session.get('username'))
-    response = requests.get(url, 
-                            headers={'Authorization': f'Bearer {token}'},
-                            data=data,
-                            params=params
-                            )
-    return response
+CREDS = DataBase(Credentials)
+PLAYLIST_DATA = DataBase(PlaylistData)
 
 
-def refresh_roken(user):
+def api_request(request, url: str, data: dict = {}, params: dict = {}) -> requests.Response:
+    token = get_token(get_user(request))
+    return requests.get(url, 
+                        headers={'Authorization': f'Bearer {token}'},
+                        data=data,
+                        params=params
+                    )
+
+
+def refresh_token(user: str):
     response = requests.post('https://accounts.spotify.com/api/token', data={
         'grant_type': 'refresh_token',
-        'refresh_token': DB.get_user_data(
-            user,
-            collection='credentials',
-            doc='creds',
-            field='refresh_token')}, 
+        'refresh_token': CREDS.get_data(
+            filters= {'username': user}
+            )[0]['refresh_token']
+        }, 
         auth=(CLIENT_ID, CLIENT_SECRET)).json()
 
     response['expires_in'] = timezone.now() + timedelta(seconds=response['expires_in'])
-    DB.update_user_data(
-        user,
-        collection='credentials',
-        doc='creds',
-        dict_data=response)
+
+    CREDS.update_data(
+        filters={'username':user},
+        data=response
+    )   
 
 
-def authenticate(user):
-    DB.delete_user_data(user)
 
-
-def is_authenticated(user):
-    try:
-        if DB.get_user_data(
-            user,
-            collection='credentials',
-            doc='creds',
-            field='expires_in') < timezone.now():
-            refresh_roken(user)
+def is_authenticated(user: str) -> bool:
+    creds = CREDS.get_data(filters={'username':user})
+    if len(creds):
+        if creds[0]['expires_in'] <= timezone.now():
+            refresh_token(user)
         return True
-    except (KeyError, TypeError):
+    else:
         return False
 
 
-def get_token(user):
+
+def get_token(user: str) -> str:
     if is_authenticated(user):
-        return DB.get_user_data(
-            user,
-            collection='credentials',
-            doc='creds',
-            field='access_token')
+        try:
+            return CREDS.get_instance(
+                filters={'username': user}
+            ).access_token
+        except ObjectDoesNotExist:
+            print('Couldnt get Token')
+            return False
+    # else:
+    #     authenticate()
 
 
 def get_user(request):
@@ -91,19 +91,27 @@ def error_info(status_code):
 
 def update_playlist_id(request):
     url = 'https://api.spotify.com/v1/me/playlists'
-    response = api_request(request, url, params={'limit':50})
+    response = api_request(request, url, params = {'limit': 50})
 
     status, error = error_info(response.status_code)
 
     if status:
-        data = response.json()
-        playlist_ids = {str(k):item['id'] for k,item in enumerate(data['items'])}
-        DB.update_user_data(
-            get_user(request), 
-            collection='playlist_data', 
-            doc='playlist_id', 
-            dict_data=playlist_ids)
-    
+        user = get_user(request)
+        for item in response.json()['items']:
+            PLAYLIST_DATA.update_or_create(
+                data={
+                    'playlist_id': item['id'],
+                    'playlist_name': item['name'],
+                    'playlist_url': item['external_urls']['spotify'],
+                    'playlist_uri': item['uri'],
+                    'playlist_total_tracks': item['tracks']['total'],
+                    'playlist_public': item['public'],
+                    'playlist_image': item['images'][0]['url']
+                },
+                filters={
+                    'username': CREDS.get_instance(filters={'username': user})
+                }
+            )
     else:
         print(error)
 

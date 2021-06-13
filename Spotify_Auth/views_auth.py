@@ -6,11 +6,10 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .credentials import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPE
-from .firebase import DB_firebase as db
 from .forms import LoginForm
-from .util import authenticate, is_authenticated
-
-DB = db()
+from .util import is_authenticated
+from .models import Credentials
+from .database import DataBase
 
 
 def login(request):
@@ -35,20 +34,19 @@ def callback(request):
     }).json()
     response['expires_in'] = timezone.now() + timedelta(seconds=response['expires_in'])
 
-    DB.update_user_data(request.session.get('username'), dict_data={'exists':True})
-    DB.update_user_data(
-        request.session.get('username'),
-        collection='credentials',
-        doc='creds',
-        dict_data=response)
+    creds = DataBase(Credentials)
+    creds.update_or_create(
+        filters={'username': request.session['username']}, 
+        data=response
+    )
     return redirect('/welcome')
 
 
 
 def login_form(request):
     user = request.session.get('username')
-    if user and DB.if_doc_exists(user) and is_authenticated(user):
-        return HttpResponseRedirect('/welcome')
+    # if user and DB.if_doc_exists(user) and is_authenticated(user):
+    #     return HttpResponseRedirect('/welcome')
 
 
     if request.method == 'POST':
@@ -59,10 +57,10 @@ def login_form(request):
             if not form.cleaned_data['remember_me']:
                 request.session.set_expiry(0)
 
-            if DB.if_doc_exists(user):
-                if is_authenticated(user):
-                    return HttpResponseRedirect('/welcome')
-                authenticate(user)
+            # if DB.if_doc_exists(user):
+            #     if is_authenticated(user):
+            #         return HttpResponseRedirect('/welcome')
+            #     authenticate(user)
                 
             return HttpResponseRedirect('/login')
     else:
