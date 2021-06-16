@@ -5,7 +5,7 @@
 <form method="post" class="scan_form">
     {% csrf_token %}
     <div>
-        <button id="scan_playlists" type="submit" name="scan" class=
+        <button id="scan_playlists" type="submit" name="scan" value="scan" class=
             "{% if scanBtnClass %} {{ scanBtnClass }} {% else %} btn btn-secondary {% endif %}">
             Scan Playlists
         </button>

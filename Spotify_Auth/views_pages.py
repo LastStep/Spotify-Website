@@ -61,7 +61,7 @@ def search_playlist(request):
     tracks_list = json.dumps(list(tracks_data.values_list('track_name', flat=True).distinct()))
 
     if post_data := request.POST:
-        if post_data.get('scanForm'):
+        if post_data.get('scan'):
             util.update_playlist_id(request)
             util.store_playlists_data(request)
             scanBtnClass = 'btn btn-success'
