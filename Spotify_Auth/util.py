@@ -6,13 +6,13 @@ import requests
 from django.utils import timezone
 
 from .credentials import CLIENT_ID, CLIENT_SECRET
-from .models import Credentials, PlaylistData
+from .models import Credentials, PlaylistData, TracksData
 from .database import DataBase
 
 
-CREDS = DataBase(Credentials)
-PLAYLIST_DATA = DataBase(PlaylistData)
-
+CREDS_DB = DataBase(Credentials)
+PLAYLIST_DB = DataBase(PlaylistData)
+TRACKS_DB = DataBase(TracksData)
 
 
 def api_request(request, url: str, data: dict = {}, params: dict = {}) -> requests.Response:
@@ -27,7 +27,7 @@ def api_request(request, url: str, data: dict = {}, params: dict = {}) -> reques
 def refresh_token(user: str):
     response = requests.post('https://accounts.spotify.com/api/token', data={
         'grant_type': 'refresh_token',
-        'refresh_token': CREDS.get_data(
+        'refresh_token': CREDS_DB.get_data(
             filters= {'username': user}
             )[0]['refresh_token']
         }, 
@@ -35,14 +35,14 @@ def refresh_token(user: str):
 
     response['expires_in'] = timezone.now() + timedelta(seconds=response['expires_in'])
 
-    CREDS.update_data(
+    CREDS_DB.update_data(
         filters={'username':user},
         data=response
     )   
 
 
 def is_authenticated(user: str) -> bool:
-    creds = CREDS.get_data(filters={'username': user})
+    creds = CREDS_DB.get_data(filters={'username': user})
     if len(creds):
         if creds[0]['expires_in'] <= timezone.now():
             refresh_token(user)
@@ -55,7 +55,7 @@ def is_authenticated(user: str) -> bool:
 def get_token(user: str) -> str:
     if is_authenticated(user):
         try:
-            return CREDS.get_instance(
+            return CREDS_DB.get_instance(
                 filters={'username': user}
             ).access_token
         except ObjectDoesNotExist:
@@ -98,18 +98,18 @@ def update_playlist_id(request):
     if status:
         user = get_user(request)
         for item in response.json()['items']:
-            PLAYLIST_DATA.update_or_create(
+            PLAYLIST_DB.update_or_create(
                 data={
-                    'playlist_id': item['id'],
                     'playlist_name': item['name'],
                     'playlist_url': item['external_urls']['spotify'],
                     'playlist_uri': item['uri'],
                     'playlist_total_tracks': item['tracks']['total'],
                     'playlist_public': item['public'],
-                    'playlist_image': item['images'][0]['url']
+                    'playlist_image': item['images'][0]['url'],
+                    'username': CREDS_DB.get_instance(filters={'username': user})
                 },
                 filters={
-                    'username': CREDS.get_instance(filters={'username': user})
+                    'playlist_id': item['id'],
                 }
             )
     else:
@@ -118,7 +118,7 @@ def update_playlist_id(request):
 
 def get_playlists(request) -> list:
     try:
-        return PLAYLIST_DATA.get_data(
+        return PLAYLIST_DB.get_data(
             filters={'username': get_user(request)},
             fields=('playlist_id',),
             as_list=True,
@@ -133,27 +133,18 @@ def store_playlists_data(request):
     pl_ids = get_playlists(request)
     for pl_num, pl_id in enumerate(pl_ids):
 
-        print(f'{pl_num}============={pl_id}====================')
-        store_playlists_tracks(request, playlist_id=pl_id)
-
-        
-    #     DB.update_user_data(
-    #         get_user(request),
-    #         collection='playlist_data',
-    #         doc='tracks',
-    #         field=str(pl_num),
-    #         value=pl_tracks)
-
-    #     pl_info[str(pl_num)] = info
-
-    # DB.update_user_data(
-    #     get_user(request),
-    #     collection='playlist_data',
-    #     doc='playlist_info',
-    #     dict_data=pl_info)
+        tracks_data = store_playlists_tracks(request, playlist_id=pl_id)
+        for track_data in tracks_data:
+            TRACKS_DB.update_or_create(
+                filters={
+                    'track_name': track_data.pop('track_name'),
+                    'playlist': PLAYLIST_DB.get_instance(filters={'playlist_id': pl_id}),
+                },
+                data=track_data
+            )
 
 
-def store_playlists_tracks(request, playlist_id: str, playlist_name='', offset: int = 0):
+def store_playlists_tracks(request, playlist_id: str, offset: int = 0) -> list[dict]:
     url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
     response = api_request(
         request, 
@@ -164,51 +155,32 @@ def store_playlists_tracks(request, playlist_id: str, playlist_name='', offset: 
             'offset': offset
     })
 
-    # status, error = error_info(response.status_code)
+    status, error = error_info(response.status_code)
 
-    # tracks_data = []
-    # if status:
-    #     data = response.json()
+    tracks_data = []
+    if status:
+        data = response.json()
 
-    #     for track in data['items']:
-    #         try:
-    #             track = track['track']
-    #             track_info = defaultdict(list)
-    #             track_info['playlist_name'] = playlist_name
+        for track in data['items']:
+            try:
+                track = track['track']
+                track_info = defaultdict(list)
 
-    #             track_info['track_name'] = track['name']
-    #             track_info['track_link'] = track['external_urls']['spotify']
+                track_info['track_name'] = track['name']
+                track_info['track_link'] = track['external_urls']['spotify']
 
-    #             track_info['album_name'] = track['album']['name']
-    #             track_info['album_link'] = track['album']['external_urls']['spotify']
-    #             track_info['album_image'] = track['album']['images'][0]['url']
+                track_info['album_name'] = track['album']['name']
+                track_info['album_link'] = track['album']['external_urls']['spotify']
+                track_info['album_image'] = track['album']['images'][0]['url']
 
-    #             for artist in track['artists']:
-    #                 track_info['artist_name'].append(artist['name'])
-    #                 track_info['artist_link'].append(artist['external_urls']['spotify'])
+                for artist in track['artists']:
+                    track_info['artist_name'].append(artist['name'])
+                    track_info['artist_link'].append(artist['external_urls']['spotify'])
 
-    #             tracks_data.append(track_info)
-    #         except KeyError:
-    #             pass
+                tracks_data.append(track_info)
+            except KeyError:
+                pass
 
-    # return tracks_data
+    return tracks_data
 
-
-# def get_playlists_data(request):
-#     try:
-#         return DB.get_user_data(
-#             get_user(request),
-#             collection='playlist_data',
-#             doc='playlist_info')
-#     except Exception as e:
-#         print(f'Error in Getting Playlist Data from DB : {e}')
-#         return False
-
-
-# def get_tracks(request):
-#     tracks_dict = DB.get_user_data(
-#         get_user(request),
-#         collection='playlist_data',
-#         doc='tracks')  
-#     return tracks_dict
 

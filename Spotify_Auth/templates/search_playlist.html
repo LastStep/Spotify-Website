@@ -5,7 +5,7 @@
 <form method="post" class="scan_form">
     {% csrf_token %}
     <div>
-        <button id="scan_playlists" type="submit" class=
+        <button id="scan_playlists" type="submit" name="scan" class=
             "{% if scanBtnClass %} {{ scanBtnClass }} {% else %} btn btn-secondary {% endif %}">
             Scan Playlists
         </button>
@@ -18,31 +18,27 @@
     <div>
         <input type="text" id="tags" name="searchForm">
         <!-- {{ searchForm }} -->
-        <button id="search_playlists" type="submit">Search</button>
+        <button id="search_playlists" type="submit" name="search">Search</button>
     </div>
 </form>
 
+
+{% if search_tracks %}
 {% if search %}
 <h4 class="font-weight-bold text-center">{{ search }}</h4>
 {% endif %}
-
-{% if search_result and playlist_data %}
 <div class="card-columns">
-    {% for pl_id,tracks_info in search_result.items %}
-        {% for track_info in tracks_info %}
-            {% with playlist_data|get_item:pl_id as pl_data %}</p>
-            <div class="card text-white bg-dark mb-3 text-right" style="max-width: 18rem;">
-                <img src="{{ pl_data.playlist_image }}" class="card-img-top" width="300" height="300">
-                <div class="card-body">
-                    <h6 class="card-title text-center">{{ pl_data.playlist_name }}</h6>
-                    <div>
-                        <img src="{{ track_info.album_image }}" width="50" height="50">
-                        <a href="{{ track_info.album_link }}" target="_blank">{{ track_info.track_name }}</a>
-                    </div>
+    {% for track in search_tracks %}
+        <div class="card text-white bg-dark mb-3 text-right" style="max-width: 18rem;">
+            <img src="{{ track.playlist.playlist_image }}" class="card-img-top" width="300" height="300">
+            <div class="card-body">
+                <h6 class="card-title text-center">{{ track.playlist.playlist_name }}</h6>
+                <div>
+                    <img src="{{ track.album_image }}" width="50" height="50">
+                    <a href="{{ track.album_link }}" target="_blank">{{ track.track_name }}</a>
                 </div>
             </div>
-            {% endwith %}
-        {% endfor %}
+        </div>
     {% endfor %}
 </div>
 {% elif playlist_data %}
@@ -69,12 +65,8 @@
 
 <script>
     $( function() {
-        var songs_list = JSON.parse("{{ songs_list|escapejs }}");
-        var availableTags = [];
-        for (var song in songs_list) {
-            availableTags.push(song);
-        }
-
+        var availableTags = JSON.parse("{{ tracks_list|escapejs }}");
+        
       $( "#tags" ).autocomplete({
         source: availableTags,
         minLength: 2,

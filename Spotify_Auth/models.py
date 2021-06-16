@@ -38,6 +38,10 @@ class PlaylistData(models.Model):
 
 class TracksData(models.Model):
 
+    # user = models.ForeignKey(
+    #     Credentials,
+    #     on_delete=models.CASCADE,
+    # )
     playlist = models.ForeignKey(
         PlaylistData,
         on_delete=models.CASCADE,

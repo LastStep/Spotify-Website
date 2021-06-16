@@ -20,17 +20,22 @@ class DataBase(models.Model):
 
     def get_data(
         self, 
-        filters: dict, 
+        filters: dict,
+        related: str = '', 
         fields: tuple[str] = (), 
-        order: tuple[str] = (), 
+        order: tuple[str] = (),
+        as_query: bool = False, 
         as_list: bool = False,
         flat: bool = False
     ) -> Union[QuerySet[dict], QuerySet[tuple], QuerySet[list]]:
 
-        query_set = self.model.objects.filter(**filters).order_by(*order)
-        if as_list:
+        query_set = self.model.objects.select_related(related).filter(**filters).order_by(*order)
+        if as_query:
+            return query_set
+        elif as_list:
             return query_set.values_list(*fields, flat=flat)
-        return query_set.values(*fields)
+        else:
+            return query_set.values(*fields)
 
     
     # Adds Data in the instance

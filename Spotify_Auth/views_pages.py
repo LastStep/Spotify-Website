@@ -1,13 +1,18 @@
+import json
 from collections import defaultdict
+
 from django.shortcuts import redirect, render
 
 from . import util
-from .forms import ScanPlaylists
-from .models import PlaylistData
 from .database import DataBase
-import time
+from .forms import ScanPlaylists
+from .models import PlaylistData, TracksData
 
-PLAYLIST_DATA = DataBase(PlaylistData)
+PLAYLIST_DB = DataBase(PlaylistData)
+TRACKS_DB = DataBase(TracksData)
+
+PLAYLIST_DATA = None
+TRACKS_DATA = None
 
 
 def welcome(request):
@@ -33,40 +38,40 @@ def search_playlist(request):
     scanForm = ScanPlaylists(request.POST or None)
     title = 'Search Playlist'
 
-    if request.POST:
-        if scanForm.is_valid():
+    global PLAYLIST_DATA, TRACKS_DATA
+
+    if PLAYLIST_DATA:
+        playlist_data = PLAYLIST_DATA
+    else:
+        playlist_data = PLAYLIST_DATA = PLAYLIST_DB.get_data(
+                filters={'username': request.session['username']},
+                order=('playlist_name',)
+            )
+        
+    ids = playlist_data.values_list('id', flat=True)
+
+    if TRACKS_DATA:
+        tracks_data = TRACKS_DATA
+    else:
+        tracks_data = TRACKS_DATA = TRACKS_DB.get_data(
+            filters={'playlist_id__in': ids},
+            related='playlist',
+            as_query=True,
+        )
+    tracks_list = json.dumps(list(tracks_data.values_list('track_name', flat=True).distinct()))
+
+    if post_data := request.POST:
+        if post_data.get('scanForm'):
             util.update_playlist_id(request)
-            start = time.time()
             util.store_playlists_data(request)
-            print(f'Time Elapsed : {time.time() - start}')
             scanBtnClass = 'btn btn-success'
 
-        if request.POST.get('searchForm'):
-            search = request.session['search'] = request.POST.get('searchForm')
-            search_result = defaultdict(list)
-            for playlist_id, tracks in request.session['songs_data'].items():
-                for track in tracks:
-                    if search == track['track_name']:
-                        search_result[playlist_id].append(track)
-            search_result = dict(search_result)
+        if post_data.get('searchForm'):
+            search = post_data.get('searchForm')
+            search_tracks = tracks_data.filter(track_name__contains=search)
 
-    playlist_data = PLAYLIST_DATA.get_data(
-        filters={'username': request.session['username']},
-        order=('playlist_name',)
-    )
-
-    # try:
-    #     songs_data = request.session['songs_data']
-    #     songs_list = request.session['songs_list']
-    # except KeyError:
-    #     tracks_dict = util.get_tracks(request)
-    #     songs_data = request.session['songs_data'] = tracks_dict
-
-    #     songs_list = defaultdict(bool)
-    #     for playlist_id, tracks in tracks_dict.items():
-    #         for track in tracks:
-    #             songs_list[track['track_name']] = True
-    #     songs_list = request.session['songs_list'] = json.dumps(songs_list)
+            return render(request, 'search_playlist.html', locals())
+                       
     
     return render(request, 'search_playlist.html', locals())
 
