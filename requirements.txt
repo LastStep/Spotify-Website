@@ -38,7 +38,6 @@ pyparsing==2.4.7
 Pyrebase==3.0.27
 python-jwt==2.0.1
 pytz==2021.1
-pywin32==228
 pyzmq==20.0.0
 requests==2.25.1
 requests-toolbelt==0.7.0

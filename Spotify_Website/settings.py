@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import django_heroku
 from pathlib import Path
 import os
+import dj_database_url
+
 SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +28,12 @@ SECRET_KEY = 'django-insecure-_7gfbq9lw4w=#0l1wnyv9^r)wkh(_4td%j-v-asbkc6z%7hgu9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '0.0.0.0', 
+    'localhost', 
+    '127.0.0.1',            
+    'https://spotifyprojectidk.herokuapp.com/',
+]
 
 
 # Application definition
@@ -38,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     'rest_framework',
     'Spotify_Auth.apps.SpotifyAuthConfig'
 ]
@@ -87,7 +95,8 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

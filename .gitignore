@@ -4,3 +4,5 @@
 __pycache__/
 db.sqlite3
 venv/
+
+Soitify_Auth/credentials.py
