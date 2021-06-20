@@ -46,7 +46,7 @@ def is_authenticated(request, user: str) -> bool:
     expires_in = request.session.get('expires_in', None)
     if expires_in:
         if expires_in <= timezone.now().timestamp():
-            refresh_token(user)
+            refresh_token(request, user)
         return True
     else:
         return False
@@ -112,7 +112,7 @@ def update_playlist_id(request):
                     'playlist_total_tracks': item['tracks']['total'],
                     'playlist_public': item['public'],
                     'playlist_image': item['images'][0]['url'],
-                    'username': CREDS_DB.get_instance(filters={'username': user})
+                    'username_id': user,
                 },
                 filters={
                     'playlist_id': item['id'],
@@ -125,7 +125,7 @@ def update_playlist_id(request):
 def get_playlists(request) -> list:
     try:
         return PLAYLIST_DB.get_data(
-            filters={'username': get_user(request)},
+            filters={'username_id': get_user(request)},
             fields=('playlist_id',),
             as_list=True,
             flat=True
