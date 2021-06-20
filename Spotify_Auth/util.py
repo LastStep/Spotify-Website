@@ -145,7 +145,9 @@ def store_playlists_data(request):
             TRACKS_DB.update_or_create(
                 filters={
                     'track_name': track_data.pop('track_name'),
-                    'playlist': PLAYLIST_DB.get_instance(filters={'playlist_id': pl_id}),
+                    'playlist': PLAYLIST_DB.get_instance(filters={
+                        'username_id': get_user(request),
+                        'playlist_id': pl_id}),
                 },
                 data=track_data
             )
