@@ -1,7 +1,6 @@
 # To-fix
-Playlist Limit = 50
-Tracks Limit = 100
+    Playlist Limit = 50
+    Tracks Limit = 100
 
-
-SLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOWWWWW 
-Data Processing
+    Scanning Takes long, heroku timeouts :: code=H12
+        Need background worker https://devcenter.heroku.com/articles/python-rq

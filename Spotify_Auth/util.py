@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
-import requests
+import requests, time
 from django.utils import timezone
 
 from .credentials import CLIENT_ID, CLIENT_SECRET
@@ -14,9 +14,9 @@ CREDS_DB = DataBase(Credentials)
 PLAYLIST_DB = DataBase(PlaylistData)
 TRACKS_DB = DataBase(TracksData)
 
-
+# @sync_to_async
 def api_request(request, url: str, data: dict = {}, params: dict = {}) -> requests.Response:
-    token = get_token(get_user(request))
+    token = get_token(request, get_user(request))
     return requests.get(url, 
                         headers={'Authorization': f'Bearer {token}'},
                         data=data,
@@ -24,7 +24,7 @@ def api_request(request, url: str, data: dict = {}, params: dict = {}) -> reques
                     )
 
 
-def refresh_token(user: str):
+def refresh_token(request, user: str):
     response = requests.post('https://accounts.spotify.com/api/token', data={
         'grant_type': 'refresh_token',
         'refresh_token': CREDS_DB.get_data(
@@ -38,27 +38,26 @@ def refresh_token(user: str):
     CREDS_DB.update_data(
         filters={'username':user},
         data=response
-    )   
+    )
+    store_creds(request, user)   
 
 
-def is_authenticated(user: str) -> bool:
-    creds = CREDS_DB.get_data(filters={'username': user})
-    if len(creds):
-        if creds[0]['expires_in'] <= timezone.now():
+def is_authenticated(request, user: str) -> bool:
+    expires_in = request.session.get('expires_in', None)
+    if expires_in:
+        if expires_in <= timezone.now().timestamp():
             refresh_token(user)
         return True
     else:
         return False
 
 
-
-def get_token(user: str) -> str:
-    if is_authenticated(user):
+def get_token(request, user: str) -> str:
+    if is_authenticated(request, user):
         try:
-            return CREDS_DB.get_instance(
-                filters={'username': user}
-            ).access_token
-        except ObjectDoesNotExist:
+            return request.session['access_token']
+        except Exception as e:
+            print(e)
             print('Couldnt get Token')
             return False
     # else:
@@ -67,6 +66,13 @@ def get_token(user: str) -> str:
 
 def get_user(request):
     return request.session.get('username')
+
+
+def store_creds(request, user):
+    creds = CREDS_DB.get_data(filters={'username': user})[0]
+    request.session['access_token'] = creds['access_token']
+    request.session['refresh_token'] = creds['refresh_token']
+    request.session['expires_in'] = creds['expires_in'].timestamp()
 
 
 def error_info(status_code):
@@ -127,6 +133,7 @@ def get_playlists(request) -> list:
     except Exception as e:
         print(f'Error in Getting Playlist from DataBase : {e}')
         return []
+
 
 
 def store_playlists_data(request):

@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from .credentials import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPE
 from .forms import LoginForm
-from .util import is_authenticated
+from .util import store_creds, get_user
 from .models import Credentials
 from .database import DataBase
 
@@ -39,6 +39,7 @@ def callback(request):
         filters={'username': request.session['username']}, 
         data=response
     )
+    store_creds(request, get_user(request))
     return redirect('/welcome')
 
 

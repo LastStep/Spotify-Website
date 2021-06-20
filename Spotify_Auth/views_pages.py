@@ -1,5 +1,4 @@
-import json
-from collections import defaultdict
+import json, time
 
 from django.shortcuts import redirect, render
 
@@ -63,7 +62,9 @@ def search_playlist(request):
     if post_data := request.POST:
         if post_data.get('scan'):
             util.update_playlist_id(request)
+            start = time.time()
             util.store_playlists_data(request)
+            print(f'Total Time = {time.time()-start}')
             scanBtnClass = 'btn btn-success'
 
         if post_data.get('searchForm'):
