@@ -43,7 +43,7 @@ def search_playlist(request):
         playlist_data = PLAYLIST_DATA
     else:
         playlist_data = PLAYLIST_DATA = PLAYLIST_DB.get_data(
-                filters={'username': request.session['username']},
+                filters={'username_id': request.session['username']},
                 order=('playlist_name',)
             )
         
