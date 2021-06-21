@@ -10,9 +10,6 @@ from .models import PlaylistData, TracksData
 PLAYLIST_DB = DataBase(PlaylistData)
 TRACKS_DB = DataBase(TracksData)
 
-PLAYLIST_DATA = None
-TRACKS_DATA = None
-
 
 def welcome(request):
     url = 'https://api.spotify.com/v1/me/player/currently-playing'
@@ -37,26 +34,18 @@ def search_playlist(request):
     scanForm = ScanPlaylists(request.POST or None)
     title = 'Search Playlist'
 
-    global PLAYLIST_DATA, TRACKS_DATA
-
-    if PLAYLIST_DATA:
-        playlist_data = PLAYLIST_DATA
-    else:
-        playlist_data = PLAYLIST_DATA = PLAYLIST_DB.get_data(
-                filters={'username_id': request.session['username']},
-                order=('playlist_name',)
-            )
+    playlist_data = PLAYLIST_DB.get_data(
+            filters={'username_id': request.session['username']},
+            order=('playlist_name',)
+        )
         
     ids = playlist_data.values_list('id', flat=True)
 
-    if TRACKS_DATA:
-        tracks_data = TRACKS_DATA
-    else:
-        tracks_data = TRACKS_DATA = TRACKS_DB.get_data(
-            filters={'playlist_id__in': ids},
-            related='playlist',
-            as_query=True,
-        )
+    tracks_data = TRACKS_DB.get_data(
+        filters={'playlist_id__in': ids},
+        related='playlist',
+        as_query=True,
+    )
     tracks_list = json.dumps(list(tracks_data.values_list('track_name', flat=True).distinct()))
 
     if post_data := request.POST:
